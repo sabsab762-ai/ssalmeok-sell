@@ -358,7 +358,7 @@ function parseHoldingText(text){
       }
       if(matched){
         hits.push({index:i, len:matched.alias.length, game:matched.game.key, alias:matched.alias});
-        i += matched.len;
+        i += matched.alias.length;
       } else {
         i++;
       }
