@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>💎 쌀먹 다이아 일괄 판매 도우미</title>
+<title>💎 김카마 쌀먹 다이아 일괄 판매 도우미</title>
+<meta name="description" content="게임 재화 보유 목록을 붙여넣으면 판매 대상·단가·수수료·실수령액을 한 번에 계산하고 등록 문구까지 만들어 주는 도구입니다.">
 <style>
   :root{
     --bg:#0f1115; --card:#181b22; --card2:#20242e; --line:#2c313d;
@@ -25,7 +26,7 @@
   header .sub{color:var(--dim); font-size:12px; margin-top:3px}
   main{max-width:1080px; margin:0 auto; padding:16px}
   .card{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:14px}
-  .card h2{font-size:15px; margin:0 0 10px; display:flex; align-items:center; gap:8px}
+  .card h2{font-size:15px; margin:0 0 10px; display:flex; align-items:center; gap:8px; flex-wrap:wrap}
   .card h2 .n{background:var(--accent); color:#fff; width:22px; height:22px; border-radius:50%;
     display:inline-flex; align-items:center; justify-content:center; font-size:12px; flex:none}
   textarea{
@@ -71,7 +72,7 @@
   .chip input{width:auto; margin:0}
   .toast{position:fixed; left:50%; bottom:26px; transform:translate(-50%,20px); background:#fff; color:#111;
     padding:11px 18px; border-radius:12px; font-size:14px; font-weight:600; opacity:0; pointer-events:none;
-    transition:.22s; z-index:60; box-shadow:0 10px 30px rgba(0,0,0,.4)}
+    transition:.22s; z-index:60; box-shadow:0 10px 30px rgba(0,0,0,.4); max-width:calc(100% - 32px); text-align:center}
   .toast.show{opacity:1; transform:translate(-50%,0)}
   details{background:var(--card2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; margin-top:10px}
   details summary{cursor:pointer; font-size:13.5px; color:var(--dim); font-weight:600}
@@ -80,10 +81,20 @@
     border-radius:5px; padding:1px 6px; font-size:12px}
   a{color:var(--accent2)}
   .warnbox{background:#2a2318; border:1px solid #4a3a20; color:#f0c78a; border-radius:10px; padding:10px 12px; font-size:12.5px; line-height:1.55}
-  .okbox{background:#17251d; border:1px solid #24402f; color:#9be0b8; border-radius:10px; padding:10px 12px; font-size:12.5px}
+  .okbox{background:#17251d; border:1px solid #24402f; color:#9be0b8; border-radius:10px; padding:10px 12px; font-size:12.5px; line-height:1.55}
+  .infobox{background:#171f2a; border:1px solid #26374a; color:#a9c6e6; border-radius:10px; padding:10px 12px; font-size:12.5px; line-height:1.55}
   .price-in{width:96px !important; display:inline-block}
   .mini{font-size:11.5px; color:var(--dim)}
-  .cell-btn{display:flex; gap:5px; flex-wrap:wrap}
+  .cell-btn{display:flex; gap:5px; flex-wrap:wrap; margin-top:5px}
+  .linkbtn{display:inline-flex; align-items:center; gap:3px; border:1px solid var(--line); background:var(--card);
+    color:var(--txt); text-decoration:none; font-size:11.5px; padding:4px 8px; border-radius:7px; font-weight:600; white-space:nowrap}
+  .linkbtn.im{border-color:#2b4a3a; color:#7ee2ab}
+  .linkbtn.bt{border-color:#4a3a2b; color:#f0b46e}
+  .basis{display:flex; align-items:center; gap:8px; flex-wrap:wrap; background:var(--card2);
+    border:1px solid var(--line); border-radius:10px; padding:9px 12px; font-size:12.5px; color:var(--dim)}
+  .basis b{color:var(--txt)}
+  .qlist{display:grid; grid-template-columns:1fr auto; gap:6px 10px; margin-top:10px; align-items:center}
+  .qlist .g{font-size:13px}
   @media (max-width:640px){
     body{font-size:15px}
     main{padding:12px}
@@ -95,8 +106,8 @@
 </head>
 <body>
 <header>
-  <h1>💎 쌀먹 다이아 일괄 판매 도우미</h1>
-  <div class="sub">붙여넣기 → 자동 파싱 → 단가·실수령 계산 → 등록 문구 복사 · 2026-11-26 시세 프리셋</div>
+  <h1>💎 김카마 쌀먹 다이아 일괄 판매 도우미</h1>
+  <div class="sub">붙여넣기 → 자동 파싱 → 단가·실수령 계산 → 등록 문구 복사 · 시세는 마지막 확인 시각과 함께 표시</div>
 </header>
 
 <main>
@@ -104,8 +115,9 @@
   <section class="card">
     <h2><span class="n">1</span>보유 다이아 원본 텍스트 붙여넣기</h2>
     <textarea id="raw" placeholder="예)
-솔(헬론드1섭) - 나유타타 2069 지배의악마 357 뎅켄811 도깨비(백운1섭)40000 넷파일1725
-이클립스 본계1 김로랑(헤카5) 13264"></textarea>
+템빨(서버1섭) - 캐릭터A 12000 캐릭터B 5000
+이클립스(헤카5) 13264
+도깨비(백운1섭) 40000"></textarea>
     <div class="row" style="margin-top:10px">
       <div class="grow">
         <label class="mini">기준 수량 (이상만 판매 대상)</label>
@@ -113,14 +125,25 @@
       </div>
       <div class="grow" style="display:flex; align-items:flex-end; gap:8px">
         <button class="primary" id="btnParse" style="flex:1">자동 파싱</button>
-        <button class="ghost" id="btnSample" title="예시 채우기">예시</button>
+        <button class="ghost" id="btnSample" title="가상의 예시 채우기">예시</button>
       </div>
     </div>
     <p class="hint" style="margin:10px 0 0">
-      게임명(도깨비의세계·이클립스·제우스·솔:인챈트)과 <span class="kbd">(서버)</span>를 읽어 자동으로 나눕니다.
+      게임명(도깨비의세계·이클립스·제우스·솔:인챈트·템빨)과 <span class="kbd">(서버)</span>를 읽어 자동으로 나눕니다.
       한 줄에 여러 캐릭터가 붙어 있어도 되고, 서버 표기가 없으면 앞 줄 서버를 그대로 씁니다.
-      파싱 결과는 표에서 직접 고칠 수 있습니다.
+      파싱 결과는 표에서 직접 고칠 수 있습니다. 입력칸은 비어 있고, 적어 둔 내용은 이 브라우저에만 저장됩니다.
     </p>
+    <details>
+      <summary>게임·서버 직접 추가 (파싱 없이 한 건씩)</summary>
+      <div class="row" style="margin-top:8px">
+        <div class="grow" style="flex:1 1 150px"><label class="mini">게임</label><select id="addGame"></select></div>
+        <div class="grow" style="flex:1 1 120px"><label class="mini">서버</label><input type="text" id="addServer" placeholder="예) 서버1"></div>
+        <div class="grow" style="flex:1 1 120px"><label class="mini">캐릭터(계정)</label><input type="text" id="addLabel" placeholder="예) 캐릭터A"></div>
+        <div class="grow" style="flex:0 1 110px"><label class="mini">보유량</label><input type="number" id="addQty" inputmode="numeric" placeholder="0"></div>
+        <div style="display:flex; align-items:flex-end"><button class="sm" id="btnAdd">추가</button></div>
+      </div>
+      <p class="hint" style="margin:8px 0 0">위에서 고른 게임·서버로 한 줄을 바로 추가합니다. 추가한 줄도 단가·판매처를 바꿀 수 있습니다.</p>
+    </details>
   </section>
 
   <!-- 2. 판매 대상 -->
@@ -134,8 +157,8 @@
             <th>게임 / 서버</th>
             <th>캐릭터(계정)</th>
             <th class="num">보유량</th>
-            <th class="num">단가<br><span class="mini">1,000당 원</span></th>
-            <th>판매처</th>
+            <th class="num">단가<br><span class="mini">게임 단위당 원</span></th>
+            <th>판매처 · 시세</th>
             <th class="num">총액</th>
             <th class="num">수수료</th>
             <th class="num">실수령</th>
@@ -158,8 +181,9 @@
       <button class="sm ghost" id="btnReset">전부 초기화</button>
     </div>
     <p class="hint" style="margin-top:10px">
-      수수료 = 판매가의 <span id="feeLabel">5%</span> (1,000원 이하 50원, 상한 적용) · 계좌 출금은 건당 1,000원 별도.
+      수수료 = 판매가의 <span id="feeLabel">5%</span> (1,000원 이하 50원, 상한 적용) · 계좌 출금은 건당 1,000원 별도.<br>
       단가·판매처는 행마다 바꿀 수 있고, 바꾼 값은 이 브라우저에 저장됩니다.
+      <b>🔄</b> 버튼으로 그 게임·서버의 실제 시세 페이지를 열어 현재가를 확인한 뒤, 단가 칸에 그 숫자를 넣으면 바로 다시 계산됩니다.
     </p>
   </section>
 
@@ -177,40 +201,45 @@
     <p class="hint" style="margin-top:8px">여기 있는 건은 기준 수량을 넘기면 자동으로 위 표(판매 대상)로 올라갑니다.</p>
   </section>
 
-  <!-- 4. 시세 참고 -->
+  <!-- 4. 시세 -->
   <section class="card">
-    <h2><span class="n">4</span>2026-11-26 21:30 실시간 시세 참고</h2>
-    <div class="scroll">
+    <h2><span class="n">4</span>시세 참고 · 최신 시세 확인</h2>
+    <div class="basis">
+      <span>마지막 시세 기준</span>
+      <b id="basisTime">불러오는 중…</b>
+      <span class="mini" id="basisSource"></span>
+    </div>
+    <div class="toolbar">
+      <button class="sm primary" id="btnQuick">🔄 최신 시세 확인하기</button>
+      <span class="mini">지금 판매 대상의 게임·서버 페이지를 목록으로 엽니다</span>
+    </div>
+    <div id="quickWrap" hidden>
+      <div class="qlist" id="quickList"></div>
+    </div>
+
+    <div class="scroll" style="margin-top:12px">
       <table>
-        <thead><tr><th>게임 / 서버</th><th class="num">아이템매니아</th><th class="num">바로템</th><th>비고</th></tr></thead>
-        <tbody>
-          <tr><td>도깨비의세계 · 백운 1</td><td class="num">8,030원<span class="mini">/1만</span></td><td class="num">950원<span class="mini">/1,000</span></td><td class="mini">아이템매니아 일평균(11/25), 바로템 등록호가 898~1,600</td></tr>
-          <tr><td>이클립스 · 헤스카리온 05</td><td class="num">4,500~5,100</td><td class="num">3,930~4,700</td><td class="mini">아이템매니아에 평균시세 서비스 없음 → 등록호가 기준</td></tr>
-          <tr><td>이클립스 · 바르카디온 04</td><td class="num">6,300~7,900</td><td class="num">6,100~6,300</td><td class="mini">아이템매니아 중앙값 약 7,200</td></tr>
-          <tr><td>이클립스 · 발키리아 04</td><td class="num">4,700~8,000</td><td class="num">4,200~5,000</td><td class="mini">아이템매니아 다수 4,700~6,700</td></tr>
-          <tr><td>제우스 · 아레스 1</td><td class="num">5,190원<span class="mini">/1,000</span></td><td class="num">5,556~7,000</td><td class="mini">아이템매니아 일평균(11/25, 전일 +170)</td></tr>
-        </tbody>
+        <thead><tr><th>게임 / 서버</th><th class="num" id="thIm">아이템매니아</th><th class="num" id="thBt">바로템</th><th>비고 · 바로 열기</th></tr></thead>
+        <tbody id="priceBody"></tbody>
       </table>
     </div>
+
     <div class="warnbox" style="margin-top:12px">
-      단위 주의 — <b>도깨비의세계는 '금전 1만 개당'</b>, 이클립스·제우스는 <b>'다이아 1,000개당'</b> 시세입니다.
-      4만 금전 = 1만×4 → 8,030원×4 = 32,120원. 표의 단가는 항상 1,000당으로 계산합니다.
-      가격은 등록 호가·전일 평균이라 실제 체결은 달라질 수 있습니다(조사 후에도 계속 움직임).
+      단위 주의 — <b>도깨비의세계만 '금전 1만 개당'</b>, 나머지(이클립스·제우스·솔:인챈트·템빨)는 <b>'1,000개당'</b> 시세입니다.
+      템빨은 거래소에 개당(12~23원)으로도 올라오니 그 값이면 ×1,000 해서 넣으세요. 표의 단가도 게임 단위 그대로 넣습니다.
+      4만 금전 = 1만×4 → 8,030원×4 = 32,120원. 가격은 등록 호가·전일 평균이라 실제 체결은 달라질 수 있습니다.
     </div>
-    <details>
-      <summary>바로 확인하는 링크 (로그인 없이 조회)</summary>
-      <p class="hint" style="margin:0">
-        아이템매니아 도깨비의세계 백운1 — <a href="https://www.itemmania.com/sell/list_search.html?search_game=6045&search_server=25180" target="_blank" rel="noopener">팝니다</a> /
-        <a href="https://www.itemmania.com/game_info/money/index.html" target="_blank" rel="noopener">게임머니 시세</a><br>
-        아이템매니아 이클립스 헤스카리온05 — <a href="https://www.itemmania.com/sell/list_search.html?search_game=6028&search_server=24905" target="_blank" rel="noopener">팝니다</a>,
-        바르카디온04 — <a href="https://www.itemmania.com/sell/list_search.html?search_game=6028&search_server=24910" target="_blank" rel="noopener">팝니다</a>,
-        <a href="https://www.itemmania.com/sell/list.html?search_game=6028" target="_blank" rel="noopener">이클립스 전체</a><br>
-        아이템매니아 제우스 — <a href="https://www.itemmania.com/sell/list.html?search_game=6027" target="_blank" rel="noopener">전체</a><br>
-        바로템 도깨비의세계 — <a href="https://www.barotem.com/product/lists/2382r1093" target="_blank" rel="noopener">게임머니</a>,
-        이클립스 — <a href="https://www.barotem.com/product/lists/2382r1058" target="_blank" rel="noopener">게임머니</a>,
-        제우스 — <a href="https://www.barotem.com/product/lists/2382r1057" target="_blank" rel="noopener">게임머니</a>
-      </p>
-    </details>
+
+    <div class="infobox" style="margin-top:10px">
+      <b>실시간 자동 연동에 대해 — 사실대로</b><br>
+      ① 아이템매니아·바로템은 다른 사이트에서 JavaScript로 가격을 직접 받아갈 수 없도록 CORS 응답 헤더를 주지 않습니다.
+      브라우저에서 실제로 요청해 확인했고, 바로템은 비브라우저 요청도 403으로 막습니다. 그래서 이 페이지가 '진짜 실시간' 값을 스스로 채우는 것은 불가능합니다.
+      <b>없는 시세를 만들어 넣지 않습니다.</b><br>
+      ② 대신 위 <b>🔄 최신 시세 확인하기</b>와 표의 <b>🔄 IM / 🔄 BT</b> 버튼이 해당 게임·서버의 실제 시세 페이지를 새 탭으로 바로 열어 줍니다.
+      거기서 본 현재가를 단가 칸에 그대로 입력하면 즉시 다시 계산됩니다.<br>
+      ③ 아래 시세는 마지막으로 직접 확인해 기록한 값(<code>prices.json</code>)이며, 그 시각 이후로는 계속 움직입니다.
+      파일을 새로 올리면 페이지가 다음에 열릴 때 그 값과 시각을 자동으로 반영합니다.
+    </div>
   </section>
 
   <!-- 5. 수수료 -->
@@ -252,23 +281,61 @@
 /* ------------------------------------------------------------------ *
  *  0. 상수 · 프리셋
  * ------------------------------------------------------------------ */
-const STORE_KEY = "ssalmeok-sell-v2";
+const STORE_KEY = "ssalmeok-sell-v3";
 
+// unit = 거래소가 시세를 매기는 수량 단위(1만 개 / 1,000개)
 const GAMES = [
-  { key:"도깨비의세계", aliases:["도깨비의세계","도깨비의 세계","도깨비"], unit:10000, cur:"금전" },
+  { key:"도깨비의세계", aliases:["도깨비의세계","도깨비의 세계","도깨비"], unit:10000, cur:"금전", short:"도깨비" },
   { key:"이클립스:더어웨이크닝", aliases:["이클립스:더어웨이크닝","이클립스: 더어웨이크닝","이클립스"], unit:1000, cur:"다이아", short:"이클립스" },
   { key:"제우스:오만의신", aliases:["제우스:오만의신","제우스: 오만의신","제우스"], unit:1000, cur:"다이아", short:"제우스" },
-  { key:"솔:인챈트", aliases:["솔:인챈트","솔인챈트","솔"], unit:1000, cur:"다이아", short:"솔" },
-  { key:"템빨", aliases:["템빨"], unit:1000, cur:"다이아", short:"템빨" }
+  { key:"솔:인챈트", aliases:["솔:인챈트","솔: 인챈트","솔인챈트","솔"], unit:1000, cur:"다이아", short:"솔" },
+  { key:"템빨:오버기어드", aliases:["템빨:오버기어드","템빨: 오버기어드","템빨오버기어드","템빨"], unit:1000, cur:"다이아", short:"템빨" }
 ];
 
-// 2026-11-26 21:30 조사 프리셋 (1,000당 원)
-const PRICE_PRESET = [
-  { game:"도깨비의세계", server:"백운 1", im:803, bt:950 },
-  { game:"이클립스:더어웨이크닝", server:"헤스카리온 05", im:4600, bt:4300 },
-  { game:"이클립스:더어웨이크닝", server:"바르카디온 04", im:7200, bt:6200 },
-  { game:"이클립스:더어웨이크닝", server:"발키리아 04", im:5800, bt:4600 },
-  { game:"제우스:오만의신", server:"아레스 1", im:5190, bt:6300 }
+// 시세 검색 페이지 (게임별 · 서버별). 새 주소가 생기면 여기만 고치면 됩니다.
+const IM_MONEY_INDEX = "https://www.itemmania.com/game_info/money/index.html";
+const BT_INDEX = "https://www.barotem.com/";
+const MARKET = {
+  "도깨비의세계": {
+    im: "https://www.itemmania.com/sell/list.html?search_game=6045",
+    bt: "https://www.barotem.com/product/lists/2382r1093",
+    imServer: { "백운 1": "https://www.itemmania.com/sell/list_search.html?search_game=6045&search_server=25180" }
+  },
+  "이클립스:더어웨이크닝": {
+    im: "https://www.itemmania.com/sell/list.html?search_game=6028",
+    bt: "https://www.barotem.com/product/lists/2382r1058",
+    imServer: {
+      "헤스카리온 05": "https://www.itemmania.com/sell/list_search.html?search_game=6028&search_server=24905",
+      "바르카디온 04": "https://www.itemmania.com/sell/list_search.html?search_game=6028&search_server=24910"
+    }
+  },
+  "제우스:오만의신": {
+    im: "https://www.itemmania.com/sell/list.html?search_game=6027",
+    bt: "https://www.barotem.com/product/lists/2382r1057"
+  },
+  "솔:인챈트": {
+    im: "https://www.itemmania.com/sell/list.html?search_game=5885",
+    bt: "https://www.barotem.com/product/lists/2382r1003"
+  },
+  "템빨:오버기어드": {
+    im: "https://www.itemmania.com/sell/list.html?search_game=6056",
+    bt: "https://www.barotem.com/product/lists/2382r1107"
+  }
+};
+
+// 2026-11-26 21:30 직접 확인한 값 (게임 단위당 원). prices.json 이 있으면 그 값으로 대체됩니다.
+let PRICE_META = {
+  generated_at: "2026-11-26 21:30 KST",
+  source: "아이템매니아·바로템 공개 화면 직접 확인"
+};
+let PRICE_PRESET = [
+  { game:"도깨비의세계", server:"백운 1", im:8030, bt:9500, note:"아이템매니아 일평균(11/25), 바로템 등록호가 1,000당 900~1,000" },
+  { game:"이클립스:더어웨이크닝", server:"헤스카리온 05", im:4600, bt:4300, note:"아이템매니아 평균시세 없음 → 등록호가" },
+  { game:"이클립스:더어웨이크닝", server:"바르카디온 04", im:7200, bt:6200, note:"아이템매니아 중앙값 약 7,200" },
+  { game:"이클립스:더어웨이크닝", server:"발키리아 04", im:5800, bt:4600, note:"아이템매니아 다수 4,700~6,700" },
+  { game:"제우스:오만의신", server:"아레스 1", im:5190, bt:6300, note:"아이템매니아 일평균(11/25, 전일 +170)" },
+  { game:"솔:인챈트", server:"", im:13500, bt:10500, note:"11/27 00:15 호가 · 아이템매니아 1,000당 7,700~18,500(헬론드01 9,800~15,000), 바로템 천당 8,640~13,354" },
+  { game:"템빨:오버기어드", server:"", im:18000, bt:18000, note:"11/27 00:13 호가 · 아이템매니아 1,000당 12,000~23,000(개당 12~23원), 바로템 1,000당 17,100~20,000" }
 ];
 
 const FEE = {
@@ -385,7 +452,7 @@ function parseHoldingText(text){
       let body = seg.body
         .replace(/^[\s\-–—·•:]+/,"")
         .replace(/\)\s*(\d{3,})/g, ") $1")            // )40000 → ) 40000
-        .replace(/([^\s\d()])(\d{3,})/g, "$1 $2");    // 뎅켄811 → 뎅켄 811
+        .replace(/([^\s\d()])(\d{3,})/g, "$1 $2");    // 캐릭터A811 → 캐릭터A 811
 
       const re = /(\([^)]*\))|(\d[\d,]*)|([^\s()]+)/g;
       let m;
@@ -416,7 +483,6 @@ function parseHoldingText(text){
 
       // 서버가 이 구간에 없으면 이전 서버 유지
       segItems.forEach(it=>{ if(!it.server) it.server = lastServer; });
-
       segItems.forEach(it=>{
         out.push({
           game: it.game || "",
@@ -459,8 +525,14 @@ function loadState(){
   return false;
 }
 
+function presetOf(game, server){
+  const exact = PRICE_PRESET.find(p=>p.game===game && p.server===server && (p.im!=null || p.bt!=null));
+  if(exact) return exact;
+  return PRICE_PRESET.find(p=>p.game===game && p.server==="" && (p.im!=null || p.bt!=null)) || null;
+}
+
 function normalizeItem(it){
-  const preset = PRICE_PRESET.find(p=>p.game===it.game && p.server===it.server);
+  const preset = presetOf(it.game, it.server);
   return {
     game: it.game || "",
     server: it.server || "",
@@ -468,8 +540,8 @@ function normalizeItem(it){
     qty: Number(it.qty) || 0,
     site: it.site === "bt" ? "bt" : "im",
     price: {
-      im: Number(it.price && it.price.im) || (preset ? preset.im : 5000),
-      bt: Number(it.price && it.price.bt) || (preset ? preset.bt : 5000)
+      im: Number(it.price && it.price.im) || (preset && preset.im != null ? preset.im : 0),
+      bt: Number(it.price && it.price.bt) || (preset && preset.bt != null ? preset.bt : 0)
     },
     done: !!it.done
   };
@@ -484,11 +556,13 @@ function saveState(){
  * ------------------------------------------------------------------ */
 const won = n => Number(n||0).toLocaleString("ko-KR");
 
+function gameUnit(it){ return gameMeta(it.game).unit || 1000; }
+function unitLabel(it){ return gameUnit(it) === 10000 ? "1만당" : "1,000당"; }
 function unitPrice(it){ return it.price[it.site] || 0; }
 
 function totalOf(it){
-  // 보유량 × (1,000당 단가) / 1,000
-  return Math.round(it.qty * unitPrice(it) / 1000);
+  // 보유량 × (게임 단위당 단가) ÷ 게임 단위
+  return Math.round(it.qty * unitPrice(it) / gameUnit(it));
 }
 
 function feeOf(amount, site){
@@ -504,16 +578,25 @@ function netOf(it){
 }
 
 /* ------------------------------------------------------------------ *
- *  4. 등록 문구
+ *  4. 시세 링크 · 등록 문구
  * ------------------------------------------------------------------ */
+function marketUrl(game, server, site){
+  const m = MARKET[game] || {};
+  if(site === "im"){
+    if(m.imServer && server && m.imServer[server]) return m.imServer[server];
+    return m.im || IM_MONEY_INDEX;
+  }
+  return m.bt || BT_INDEX;
+}
+
 function qtyText(it){
   const g = gameMeta(it.game);
   return `${g.cur} ${won(it.qty)}개`;
 }
 function unitText(it){
-  const p = unitPrice(it);
-  if(it.game === "도깨비의세계") return `금전 1만 개당 ${won(p*10)}원 (1,000당 ${won(p)}원)`;
-  return `${gameMeta(it.game).cur} 1,000개당 ${won(p)}원`;
+  const g = gameMeta(it.game), p = unitPrice(it);
+  if(g.unit === 10000) return `${g.cur} 1만 개당 ${won(p)}원`;
+  return `${g.cur} 1,000개당 ${won(p)}원`;
 }
 
 function titleText(it){
@@ -553,7 +636,7 @@ function toast(msg){
   el.textContent = msg;
   el.classList.add("show");
   clearTimeout(toast._t);
-  toast._t = setTimeout(()=> el.classList.remove("show"), 1800);
+  toast._t = setTimeout(()=> el.classList.remove("show"), 2200);
 }
 
 async function copyText(txt, okMsg){
@@ -582,29 +665,35 @@ function render(){
   if(rows.length === 0){
     sb.innerHTML = `<tr><td colspan="10" class="empty">아직 판매 대상이 없습니다. 위에 원본 텍스트를 붙여넣고 [자동 파싱]을 눌러 주세요.</td></tr>`;
   } else {
-    sb.innerHTML = rows.map((it, idx)=>{
+    sb.innerHTML = rows.map((it)=>{
       const i = state.items.indexOf(it);
       const t = totalOf(it), f = feeOf(t, it.site), n = t - f;
-      const preset = PRICE_PRESET.find(p=>p.game===it.game && p.server===it.server);
+      const preset = presetOf(it.game, it.server);
+      const imU = marketUrl(it.game, it.server, "im");
+      const btU = marketUrl(it.game, it.server, "bt");
       return `
       <tr class="item-row sellable ${it.done ? "done" : ""}" data-row="${i}">
         <td><input type="checkbox" data-act="done" data-i="${i}" ${it.done ? "checked" : ""} style="width:18px;height:18px"></td>
         <td>
           <span class="tag game">${gameLabel(it.game)}</span>
-          <div style="margin-top:3px; font-weight:600">${it.server}</div>
+          <div style="margin-top:3px; font-weight:600">${escapeHtml(it.server)}</div>
         </td>
         <td>${escapeHtml(it.label)}</td>
         <td class="num">${won(it.qty)}</td>
         <td class="num">
           <input class="price-in" type="number" inputmode="numeric" step="10" data-act="price" data-i="${i}" value="${unitPrice(it)}">
-          <div class="mini c-unitmini">${it.game==="도깨비의세계" ? "1만당 " + won(unitPrice(it)*10) : "1,000당"}</div>
+          <div class="mini c-unitmini">${unitLabel(it)}</div>
         </td>
         <td>
           <select data-act="site" data-i="${i}" style="min-width:104px">
             <option value="im" ${it.site==="im"?"selected":""}>아이템매니아</option>
             <option value="bt" ${it.site==="bt"?"selected":""}>바로템</option>
           </select>
-          <div class="mini">${preset ? "시세 프리셋" : "직접 입력"}</div>
+          <div class="cell-btn">
+            <a class="linkbtn im" href="${imU}" target="_blank" rel="noopener" data-act="open" data-i="${i}" data-site="im">🔄 IM</a>
+            <a class="linkbtn bt" href="${btU}" target="_blank" rel="noopener" data-act="open" data-i="${i}" data-site="bt">🔄 BT</a>
+          </div>
+          <div class="mini">${preset ? (preset.server === it.server ? "시세 기준 적용" : "게임 평균값") : "직접 입력"}</div>
         </td>
         <td class="num c-total">${won(t)}원</td>
         <td class="num c-fee">${won(f)}원<div class="mini">${FEE[it.site].rate}%</div></td>
@@ -624,16 +713,61 @@ function render(){
   wb.innerHTML = wrows.length === 0
     ? `<tr><td colspan="4" class="empty">대기 중인 항목이 없습니다.</td></tr>`
     : wrows.map(it=>{
-        const i = state.items.indexOf(it);
         return `<tr>
-          <td><span class="tag game">${gameLabel(it.game)}</span> ${it.server}</td>
+          <td><span class="tag game">${gameLabel(it.game)}</span> ${escapeHtml(it.server)}</td>
           <td>${escapeHtml(it.label)}</td>
           <td class="num">${won(it.qty)}</td>
           <td class="num mini">${won(Math.max(0, state.threshold - it.qty))}개 부족</td>
         </tr>`;
       }).join("");
 
+  renderPrices();
+  renderQuick();
   updateSummary();
+}
+
+function renderPrices(){
+  $("basisTime").textContent = PRICE_META.generated_at || "기록 없음";
+  $("basisSource").textContent = PRICE_META.source ? "· " + PRICE_META.source : "";
+
+  const body = $("priceBody");
+  body.innerHTML = PRICE_PRESET.map(p=>{
+    const g = gameMeta(p.game);
+    const u = g.unit === 10000 ? "1만" : "1,000";
+    const cell = v => v == null
+      ? `<span class="mini">확인 필요</span>`
+      : `${won(v)}원<span class="mini">/${u}</span>`;
+    return `<tr>
+      <td><span class="tag game">${gameLabel(p.game)}</span> ${p.server ? escapeHtml(p.server) : `<span class="mini">서버 전체</span>`}</td>
+      <td class="num">${cell(p.im)}</td>
+      <td class="num">${cell(p.bt)}</td>
+      <td class="mini">
+        ${escapeHtml(p.note || "")}
+        <div class="cell-btn">
+          <a class="linkbtn im" href="${marketUrl(p.game, p.server, "im")}" target="_blank" rel="noopener">🔄 IM</a>
+          <a class="linkbtn bt" href="${marketUrl(p.game, p.server, "bt")}" target="_blank" rel="noopener">🔄 BT</a>
+        </div>
+      </td>
+    </tr>`;
+  }).join("");
+}
+
+function renderQuick(){
+  const wrap = $("quickWrap");
+  const list = $("quickList");
+  const rows = sellable();
+  const items = rows.length ? rows : GAMES.map(g=>({game:g.key, server:"", label:"", qty:0}));
+  list.innerHTML = items.map(it=>{
+    return `<div class="g"><span class="tag game">${gameLabel(it.game)}</span> ${it.server ? escapeHtml(it.server) : ""}</div>
+      <div class="cell-btn">
+        <a class="linkbtn im" href="${marketUrl(it.game, it.server, "im")}" target="_blank" rel="noopener">아이템매니아</a>
+        <a class="linkbtn bt" href="${marketUrl(it.game, it.server, "bt")}" target="_blank" rel="noopener">바로템</a>
+      </div>`;
+  }).join("");
+  if(!rows.length){
+    list.insertAdjacentHTML("afterbegin", `<div class="g mini">판매 대상이 없어 게임별 시세 페이지를 보여 줍니다.</div><div></div>`);
+  }
+  wrap.hidden = $("btnQuick").dataset.open !== "1";
 }
 
 function updateSummary(){
@@ -657,14 +791,11 @@ function escapeHtml(s){
  *  6. 이벤트
  * ------------------------------------------------------------------ */
 $("btnSample").addEventListener("click", ()=>{
-  $("raw").value = `솔(헬론드1섭) - 나유타타 2069 지배의악마 357 뎅켄811 도깨비(백운1섭)40000 넷파일1725
-이클립스 본계1 김로랑(헤카5) 13264
-네이버 지베의악마(바르카디온04) 7484
-애플 죽음의악마 (발키리아4) 2000
-본계29 전쟁의악마(발키리아4) 9739
-본계30 나유타타(세라하04) 3716
-제우스 지배(아레스1섭) 4228
-김카마(제우스1섭)485 프리렌(포세이돈1섭)1500`;
+  $("raw").value = `템빨(서버1섭) - 캐릭터A 12000 캐릭터B 5000
+이클립스(헤카5) 13264
+도깨비(백운1섭) 40000
+제우스(아레스1섭) 4228
+솔(헬론드1섭) 2069`;
 });
 
 $("btnParse").addEventListener("click", ()=>{
@@ -686,6 +817,32 @@ $("btnParse").addEventListener("click", ()=>{
   saveState();
   render();
   toast(`${parsed.length}건 읽었습니다 · 판매 대상 ${sellable().length}건`);
+});
+
+$("btnAdd").addEventListener("click", ()=>{
+  const game = $("addGame").value;
+  const serverRaw = $("addServer").value.trim();
+  const label = $("addLabel").value.trim() || "이름 미지정";
+  const qty = Number(String($("addQty").value).replace(/,/g,"")) || 0;
+  if(!qty){ toast("보유량을 숫자로 입력해 주세요"); return; }
+  state.items.push(normalizeItem({
+    game,
+    server: serverRaw ? normalizeServer(serverRaw) : "서버 미지정",
+    label, qty
+  }));
+  $("addQty").value = "";
+  saveState();
+  render();
+  toast("한 건 추가했습니다");
+});
+
+$("btnQuick").addEventListener("click", ()=>{
+  $("btnQuick").dataset.open = $("btnQuick").dataset.open === "1" ? "0" : "1";
+  renderQuick();
+  if($("btnQuick").dataset.open === "1"){
+    $("quickList").scrollIntoView({behavior:"smooth", block:"nearest"});
+    toast("게임·서버별 시세 페이지를 아래에 펼쳤습니다");
+  }
 });
 
 $("threshold").addEventListener("change", ()=>{
@@ -722,14 +879,23 @@ function patchRow(i){
   if(!it || !tr) return;
   const t = totalOf(it), f = feeOf(t, it.site), n = t - f;
   const unit = tr.querySelector(".c-unitmini");
-  if(unit) unit.textContent = (it.game === "도깨비의세계" ? "1만당 " + won(unitPrice(it)*10) : "1,000당");
+  if(unit) unit.textContent = unitLabel(it);
   const cT = tr.querySelector(".c-total"); if(cT) cT.textContent = won(t) + "원";
   const cF = tr.querySelector(".c-fee");  if(cF) cF.innerHTML = won(f) + `원<div class="mini">${FEE[it.site].rate}%</div>`;
   const cN = tr.querySelector(".c-net");  if(cN) cN.innerHTML = "<b>" + won(n) + "원</b>";
   updateSummary();
+  renderQuick();
 }
 
 $("sellBody").addEventListener("click", (e)=>{
+  const link = e.target.closest("a[data-act='open']");
+  if(link){
+    const i = Number(link.dataset.i);
+    const it = state.items[i];
+    const siteName = link.dataset.site === "bt" ? "바로템" : "아이템매니아";
+    if(it) toast(`${siteName}에서 ${gameLabel(it.game)} ${it.server} 현재가를 확인한 뒤 단가 칸에 입력하세요`);
+    return;
+  }
   const btn = e.target.closest("button[data-act]");
   if(!btn) return;
   const i = Number(btn.dataset.i);
@@ -750,10 +916,10 @@ $("btnCopyAll").addEventListener("click", ()=>{
 
 $("btnCsv").addEventListener("click", ()=>{
   const rows = sellable();
-  const head = ["게임","서버","캐릭터(계정)","보유량","판매처","1,000당 단가","총액","수수료","실수령","완료"];
+  const head = ["게임","서버","캐릭터(계정)","보유량","판매처","단가기준","단가","총액","수수료","실수령","완료"];
   const lines = [head.join(",")].concat(rows.map(it=>{
     const t = totalOf(it), f = feeOf(t, it.site);
-    return [it.game, it.server, it.label, it.qty, FEE[it.site].name, unitPrice(it), t, f, t-f, it.done ? "O":"X"]
+    return [it.game, it.server, it.label, it.qty, FEE[it.site].name, unitLabel(it), unitPrice(it), t, f, t-f, it.done ? "O":"X"]
       .map(v=> `"${String(v).replace(/"/g,'""')}"`).join(",");
   }));
   const blob = new Blob(["\ufeff"+lines.join("\n")], {type:"text/csv;charset=utf-8"});
@@ -787,15 +953,54 @@ $("feeSite").addEventListener("change", calcFeeBox);
 $("feeAmount").addEventListener("input", calcFeeBox);
 
 /* ------------------------------------------------------------------ *
- *  7. 시작
+ *  7. 시세 파일(prices.json) 불러오기
+ *     같은 사이트에 올라온 파일이라 CORS 없이 읽습니다. 파일이 없으면 내장값 유지.
+ * ------------------------------------------------------------------ */
+async function loadPrices(){
+  try{
+    const res = await fetch("prices.json?ts=" + Date.now(), {cache:"no-store"});
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    if(!data || !Array.isArray(data.entries) || !data.entries.length) throw new Error("empty");
+    PRICE_PRESET = data.entries.map(e=>({
+      game: e.game, server: e.server || "",
+      im: e.im == null ? null : Number(e.im),
+      bt: e.bt == null ? null : Number(e.bt),
+      note: e.note || ""
+    }));
+    PRICE_META = {
+      generated_at: data.generated_at || "기록 없음",
+      source: data.source || ""
+    };
+  }catch(e){
+    PRICE_META.generated_at = PRICE_META.generated_at + " (내장값)";
+  }
+  renderPrices();
+  // 저장된 줄에 프리셋 단가가 비어 있던 경우 한 번 채워 줌
+  let filled = false;
+  state.items.forEach(it=>{
+    const p = presetOf(it.game, it.server);
+    if(!p) return;
+    if(!it.price.im && p.im != null){ it.price.im = p.im; filled = true; }
+    if(!it.price.bt && p.bt != null){ it.price.bt = p.bt; filled = true; }
+  });
+  if(filled){ saveState(); render(); }
+}
+
+/* ------------------------------------------------------------------ *
+ *  8. 시작
  * ------------------------------------------------------------------ */
 (function init(){
+  // 게임 선택 목록 (직접 추가용) — 템빨 포함 5종
+  $("addGame").innerHTML = GAMES.map(g=>`<option value="${g.key}">${g.short || g.key} (${g.cur})</option>`).join("");
+
   const restored = loadState();
   calcFeeBox();
   render();
+  loadPrices();
   if(!restored){
-    // 첫 방문: 예시를 미리 채워 두어 바로 눌러볼 수 있게
-    $("btnSample").click();
+    // 첫 방문에도 입력칸은 비워 둡니다. (예시는 [예시] 버튼을 눌렀을 때만)
+    $("raw").value = "";
   }
 })();
 </script>
