@@ -209,6 +209,11 @@
       <b id="basisTime">불러오는 중…</b>
       <span class="mini" id="basisSource"></span>
     </div>
+    <div class="row" style="margin-top:10px">
+      <div class="grow" style="flex:1 1 170px"><label class="mini">게임</label><select id="pickGame"></select></div>
+      <div class="grow" style="flex:1 1 170px"><label class="mini">서버 — 전 서버 목록</label><select id="pickServer"></select></div>
+    </div>
+    <div class="basis" id="pickOut" style="margin-top:8px"></div>
     <div class="toolbar">
       <button class="sm primary" id="btnQuick">🔄 최신 시세 확인하기</button>
       <span class="mini">지금 판매 대상의 게임·서버 페이지를 목록으로 엽니다</span>
@@ -237,7 +242,7 @@
       <b>없는 시세를 만들어 넣지 않습니다.</b><br>
       ② 대신 위 <b>🔄 최신 시세 확인하기</b>와 표의 <b>🔄 IM / 🔄 BT</b> 버튼이 해당 게임·서버의 실제 시세 페이지를 새 탭으로 바로 열어 줍니다.
       거기서 본 현재가를 단가 칸에 그대로 입력하면 즉시 다시 계산됩니다.<br>
-      ③ 아래 시세는 마지막으로 직접 확인해 기록한 값(<code>prices.json</code>)이며, 그 시각 이후로는 계속 움직입니다.
+      ③ 아래 시세는 마지막으로 직접 확인해 기록한 값(<code>prices.json</code>)이며, 그 시각 이후로는 계속 움직입니다. 위 게임·서버 선택에서 5개 게임 <b>169개 서버</b>를 모두 골라 그 서버의 시세 페이지를 바로 열 수 있습니다.
       파일을 새로 올리면 페이지가 다음에 열릴 때 그 값과 시각을 자동으로 반영합니다.
     </div>
   </section>
@@ -293,34 +298,26 @@ const GAMES = [
 ];
 
 // 시세 검색 페이지 (게임별 · 서버별). 새 주소가 생기면 여기만 고치면 됩니다.
-const IM_MONEY_INDEX = "https://www.itemmania.com/game_info/money/index.html";
+const IM_LIST = "https://www.itemmania.com/sell/list.html?search_game=";
+const IM_SEARCH = "https://www.itemmania.com/sell/list_search.html?search_game=";
 const BT_INDEX = "https://www.barotem.com/";
+
+// 게임별 거래소 코드 · 바로템 게임머니 목록 URL (2026-11-27 00:20~00:40 직접 확인)
 const MARKET = {
-  "도깨비의세계": {
-    im: "https://www.itemmania.com/sell/list.html?search_game=6045",
-    bt: "https://www.barotem.com/product/lists/2382r1093",
-    imServer: { "백운 1": "https://www.itemmania.com/sell/list_search.html?search_game=6045&search_server=25180" }
-  },
-  "이클립스:더어웨이크닝": {
-    im: "https://www.itemmania.com/sell/list.html?search_game=6028",
-    bt: "https://www.barotem.com/product/lists/2382r1058",
-    imServer: {
-      "헤스카리온 05": "https://www.itemmania.com/sell/list_search.html?search_game=6028&search_server=24905",
-      "바르카디온 04": "https://www.itemmania.com/sell/list_search.html?search_game=6028&search_server=24910"
-    }
-  },
-  "제우스:오만의신": {
-    im: "https://www.itemmania.com/sell/list.html?search_game=6027",
-    bt: "https://www.barotem.com/product/lists/2382r1057"
-  },
-  "솔:인챈트": {
-    im: "https://www.itemmania.com/sell/list.html?search_game=5885",
-    bt: "https://www.barotem.com/product/lists/2382r1003"
-  },
-  "템빨:오버기어드": {
-    im: "https://www.itemmania.com/sell/list.html?search_game=6056",
-    bt: "https://www.barotem.com/product/lists/2382r1107"
-  }
+  "도깨비의세계":      { imGame:"6045", bt:"https://www.barotem.com/product/lists/2382r1093" },
+  "이클립스:더어웨이크닝": { imGame:"6028", bt:"https://www.barotem.com/product/lists/2382r1058" },
+  "제우스:오만의신":     { imGame:"6027", bt:"https://www.barotem.com/product/lists/2382r1057" },
+  "솔:인챈트":          { imGame:"5885", bt:"https://www.barotem.com/product/lists/2382r1003" },
+  "템빨:오버기어드":     { imGame:"6056", bt:"https://www.barotem.com/product/lists/2382r1107" }
+};
+
+// 게임별 전체 서버 목록 + 아이템매니아 서버 코드 (거래소 서버 필터에서 직접 읽은 값)
+const SERVERS = {
+  "도깨비의세계": [["몽련 1",25057],["몽련 2",25058],["몽련 3",25059],["해월 1",25060],["해월 2",25061],["해월 3",25062],["괴량 1",25063],["괴량 2",25064],["괴량 3",25065],["아산 1",25066],["아산 2",25067],["아산 3",25068],["공월아 1",25069],["공월아 2",25070],["공월아 3",25071],["홍미희 1",25072],["홍미희 2",25073],["홍미희 3",25074],["강이태 1",25075],["강이태 2",25076],["강이태 3",25077],["소운 1",25078],["소운 2",25079],["소운 3",25080],["무이 1",25081],["무이 2",25082],["무이 3",25083],["묘롱 1",25092],["묘롱 2",25093],["묘롱 3",25094],["해일 1",25177],["해일 2",25178],["해일 3",25179],["백운 1",25180],["백운 2",25181],["백운 3",25182],["비영 1",25183],["비영 2",25184],["비영 3",25185],["복분 1",25189],["복분 2",25190],["복분 3",25191],["유희 1",25291],["유희 2",25292],["유희 3",25293],["이세 1",25450],["이세 2",25451],["이세 3",25452]],
+  "제우스:오만의신": [["아테나 1",24868],["아테나 2",24869],["아테나 3",24870],["아레스 1",24871],["아레스 2",24872],["아레스 3",24873],["제우스 1",24874],["제우스 2",24875],["제우스 3",24876],["헤라 1",24877],["헤라 2",24878],["헤라 3",24879],["포세이돈 1",24880],["포세이돈 2",24881],["포세이돈 3",24882],["아폴론 1",24883],["아폴론 2",24884],["아폴론 3",24885],["아르테미스 1",24886],["아르테미스 2",24887],["아르테미스 3",24888],["아프로디테 1",24889],["아프로디테 2",24890],["아프로디테 3",24891],["헤파이스토스 1",24892],["헤파이스토스 2",24893],["헤파이스토스 3",24894],["헤르메스 1",24895],["헤르메스 2",24896],["헤르메스 3",24897]],
+  "솔:인챈트": [["칼테온 01",24569],["칼테온 02",24570],["칼테온 03",24571],["칼테온 04",24572],["칼테온 05",24573],["린델 01",24574],["린델 02",24575],["린델 03",24576],["린델 04",24577],["린델 05",24578],["이브라스 01",24579],["이브라스 02",24580],["이브라스 03",24581],["이브라스 04",24582],["이브라스 05",24583],["헬론드 01",24584],["헬론드 02",24585],["헬론드 03",24586],["헬론드 04",24587],["헬론드 05",24588],["에르네 01",24589],["에르네 02",24590],["에르네 03",24591],["에르네 04",24592],["에르네 05",24593],["리차드 01",24594],["리차드 02",24595],["리차드 03",24596],["리차드 04",24597],["리차드 05",24598],["레지나 01",24665],["레지나 02",24666],["레지나 03",24667],["레지나 04",24668],["레지나 05",24669]],
+  "이클립스:더어웨이크닝": [["헤스카리온 01",24901],["헤스카리온 02",24902],["헤스카리온 03",24903],["헤스카리온 04",24904],["헤스카리온 05",24905],["헤스카리온 06",24906],["바르카디온 01",24907],["바르카디온 02",24908],["바르카디온 03",24909],["바르카디온 04",24910],["바르카디온 05",24911],["바르카디온 06",24912],["발키리아 01",24913],["발키리아 02",24914],["발키리아 03",24915],["발키리아 04",24916],["발키리아 05",24917],["발키리아 06",24918],["세라하 01",24919],["세라하 02",24920],["세라하 03",24921],["세라하 04",24922],["세라하 05",24923],["세라하 06",24924],["벨제라 01",25024],["벨제라 02",25025],["벨제라 03",25026],["벨제라 04",25027],["벨제라 05",25028],["벨제라 06",25029],["셀린 01",25147],["셀린 02",25148],["셀린 03",25149],["셀린 04",25150],["셀린 05",25151],["셀린 06",25152]],
+  "템빨:오버기어드": [["그리드",25307],["아이린",25308],["루비",25309],["유라",25310],["후로이",25311],["피아로",25312],["토반",25313],["파그마",25314],["뮐러",25315],["마드라",25316],["칸",25317],["아그너스",25318],["휴렌트",25319],["판미르",25320],["하스터",25321],["루나",25322],["이사벨",25323],["레가스",25324],["라우엘",25325],["바사라",25326]],
 };
 
 // 2026-11-26 21:30 직접 확인한 값 (게임 단위당 원). prices.json 이 있으면 그 값으로 대체됩니다.
@@ -376,6 +373,34 @@ function normalizeServer(raw){
     if(m) return fn(m);
   }
   return s;
+}
+
+// 서버 이름을 거래소 표기와 맞춰 주는 도우미 (공백·0 유무 차이 허용)
+function serverKey(v){
+  return String(v||"").replace(/\s+/g,"").replace(/(서버|섭)$/,"").toLowerCase();
+}
+function serverList(game){ return SERVERS[game] || []; }
+function padTrailing(k){
+  return k.replace(/^(.*?)(\d{1,2})$/, function(m,p,n){ return p + (n.length === 1 ? "0" + n : n); });
+}
+function findServer(game, server){
+  const k = serverKey(server);
+  if(!k) return null;
+  const list = serverList(game);
+  let hit = list.find(function(x){ return serverKey(x[0]) === k; });
+  if(hit) return hit;
+  const alt = padTrailing(k);
+  hit = list.find(function(x){ return serverKey(x[0]) === alt; });
+  return hit || null;
+}
+function canonicalServer(game, text){
+  const hit = findServer(game, text);
+  if(hit) return hit[0];
+  return normalizeServer(text);
+}
+function serverCode(game, server){
+  const hit = findServer(game, server);
+  return hit ? hit[1] : 0;
 }
 
 // 게임 별칭 → 정규 게임 (긴 것부터)
@@ -484,9 +509,11 @@ function parseHoldingText(text){
       // 서버가 이 구간에 없으면 이전 서버 유지
       segItems.forEach(it=>{ if(!it.server) it.server = lastServer; });
       segItems.forEach(it=>{
+        const gm = it.game || "";
+        const server = canonicalServer(gm, it.server || lastServer) || "서버 미지정";
         out.push({
-          game: it.game || "",
-          server: it.server || "서버 미지정",
+          game: gm,
+          server,
           label: it.label.replace(/\s+/g," ").trim(),
           qty: it.qty
         });
@@ -583,8 +610,9 @@ function netOf(it){
 function marketUrl(game, server, site){
   const m = MARKET[game] || {};
   if(site === "im"){
-    if(m.imServer && server && m.imServer[server]) return m.imServer[server];
-    return m.im || IM_MONEY_INDEX;
+    const code = serverCode(game, server);
+    if(code) return IM_SEARCH + m.imGame + "&search_server=" + code;
+    return IM_LIST + m.imGame;          // 목록에 없는 서버는 게임 전체 목록으로
   }
   return m.bt || BT_INDEX;
 }
@@ -722,8 +750,47 @@ function render(){
       }).join("");
 
   renderPrices();
+  renderPick();
   renderQuick();
   updateSummary();
+}
+
+function renderPick(){
+  const gSel = $("pickGame"), sSel = $("pickServer");
+  if(!gSel.options.length){
+    gSel.innerHTML = GAMES.map(g=>`<option value="${g.key}">${g.short || g.key}</option>`).join("");
+  }
+  const game = gSel.value || GAMES[0].key;
+  const list = serverList(game);
+  const cur = sSel.dataset.cur || "";
+  sSel.innerHTML = `<option value="">서버 전체</option>` +
+    list.map(x=>`<option value="${escapeHtml(x[0])}">${escapeHtml(x[0])}</option>`).join("");
+  if(cur && list.some(x=>x[0] === cur)) sSel.value = cur;
+  renderPickOut();
+}
+
+function renderPickOut(){
+  const game = $("pickGame").value || GAMES[0].key;
+  const server = $("pickServer").value || "";
+  const g = gameMeta(game);
+  const p = PRICE_PRESET.find(x=>x.game===game && x.server===server && (x.im!=null || x.bt!=null))
+         || PRICE_PRESET.find(x=>x.game===game && x.server==="" && (x.im!=null || x.bt!=null));
+  const u = g.unit === 10000 ? "1만" : "1,000";
+  const cell = v => v==null
+    ? `<b>기록 없음</b>`
+    : `<b>${won(v)}원</b><span class="mini">/${u}</span>`;
+  const count = serverList(game).length;
+  $("pickOut").innerHTML =
+    `<span class="tag game">${gameLabel(game)}</span>` +
+    `<span>${server ? escapeHtml(server) : "서버 전체"}</span>` +
+    `<span>아이템매니아 ${cell(p ? p.im : null)}</span>` +
+    `<span>바로템 ${cell(p ? p.bt : null)}</span>` +
+    `<span class="cell-btn">` +
+      `<a class="linkbtn im" href="${marketUrl(game, server, "im")}" target="_blank" rel="noopener">🔄 IM</a>` +
+      `<a class="linkbtn bt" href="${marketUrl(game, server, "bt")}" target="_blank" rel="noopener">🔄 BT</a>` +
+    `</span>` +
+    `<span class="mini">이 게임 서버 ${count}곳 모두 조회 가능` +
+    (server ? "" : " · 서버를 고르면 그 서버 페이지로 바로 열립니다") + `</span>`;
 }
 
 function renderPrices(){
@@ -827,7 +894,7 @@ $("btnAdd").addEventListener("click", ()=>{
   if(!qty){ toast("보유량을 숫자로 입력해 주세요"); return; }
   state.items.push(normalizeItem({
     game,
-    server: serverRaw ? normalizeServer(serverRaw) : "서버 미지정",
+    server: serverRaw ? canonicalServer(game, serverRaw) : "서버 미지정",
     label, qty
   }));
   $("addQty").value = "";
@@ -843,6 +910,15 @@ $("btnQuick").addEventListener("click", ()=>{
     $("quickList").scrollIntoView({behavior:"smooth", block:"nearest"});
     toast("게임·서버별 시세 페이지를 아래에 펼쳤습니다");
   }
+});
+
+$("pickGame").addEventListener("change", ()=>{
+  $("pickServer").dataset.cur = "";
+  renderPick();
+});
+$("pickServer").addEventListener("change", ()=>{
+  $("pickServer").dataset.cur = $("pickServer").value;
+  renderPickOut();
 });
 
 $("threshold").addEventListener("change", ()=>{
